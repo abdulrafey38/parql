@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParQL Commands Reference</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-database"></i>
+                <span>ParQL</span>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="#basic" class="nav-link">Basic</a>
+                <a href="#analytics" class="nav-link">Analytics</a>
+                <a href="#processing" class="nav-link">Processing</a>
+                <a href="#visualization" class="nav-link">Visualization</a>
+                <a href="#quality" class="nav-link">Quality</a>
+                <a href="#system" class="nav-link">System</a>
+                <a href="https://github.com/abdulrafey38/parql" class="nav-link github-link">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+            </div>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main style="padding-top: 70px;">
+        <div class="container">
+            <h1>ParQL Commands Reference</h1>
+            <p>Complete reference for all ParQL commands with examples and options.</p>
+
+            <!-- Basic Operations -->
+            <section id="basic">
+                <h2><i class="fas fa-search"></i> Basic Operations</h2>
+                
+                <div class="command-doc">
+                    <h3>parql head</h3>
+                    <p>Display the first N rows of a Parquet file.</p>
+                    <pre><code class="language-bash"># Basic usage
+parql head data/sales.parquet
+parql head data/sales.parquet -n 20
+
+# With column selection
+parql head data/sales.parquet -c "user_id,revenue,country" -n 10
+
+# With filtering
+parql head data/sales.parquet -w "revenue > 1000" -n 5
+
+# With ordering
+parql head data/sales.parquet -o "revenue DESC" -n 10</code></pre>
+                    <div class="options">
+                        <h4>Options:</h4>
+                        <ul>
+                            <li><code>-n, --rows</code>: Number of rows to display (default: 10)</li>
+                            <li><code>-c, --columns</code>: Comma-separated list of columns</li>
+                            <li><code>-w, --where</code>: WHERE clause condition</li>
+                            <li><code>-o, --order-by</code>: ORDER BY clause</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql tail</h3>
+                    <p>Display the last N rows of a Parquet file.</p>
+                    <pre><code class="language-bash">parql tail data/sales.parquet -n 20
+parql tail data/sales.parquet -c "timestamp,revenue" -n 5</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql schema</h3>
+                    <p>Display schema and column information.</p>
+                    <pre><code class="language-bash">parql schema data/sales.parquet</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql count</h3>
+                    <p>Count total rows or rows matching a condition.</p>
+                    <pre><code class="language-bash"># Total row count
+parql count data/sales.parquet
+
+# Conditional count
+parql count data/sales.parquet -w "country = 'US'"
+parql count data/sales.parquet -w "revenue > 1000 AND is_premium = true"</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql select</h3>
+                    <p>Select columns and filter rows with advanced options.</p>
+                    <pre><code class="language-bash"># Select specific columns
+parql select data/sales.parquet -c "user_id,revenue,country"
+
+# Filter rows
+parql select data/sales.parquet -w "revenue > 500 AND country IN ('US', 'UK')"
+
+# Sort results
+parql select data/sales.parquet -o "revenue DESC, timestamp ASC" -l 50
+
+# Get distinct rows
+parql select data/sales.parquet -c "country,device" --distinct</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql sample</h3>
+                    <p>Sample data for quick analysis.</p>
+                    <pre><code class="language-bash"># Sample by number of rows
+parql sample data/sales.parquet --rows 1000
+
+# Sample by fraction
+parql sample data/sales.parquet --fraction 0.01
+
+# Reproducible sampling
+parql sample data/sales.parquet --rows 500 --seed 42</code></pre>
+                </div>
+            </section>
+
+            <!-- Analytics -->
+            <section id="analytics">
+                <h2><i class="fas fa-chart-line"></i> Analytics & Aggregation</h2>
+                
+                <div class="command-doc">
+                    <h3>parql agg</h3>
+                    <p>Perform grouping and aggregation operations.</p>
+                    <pre><code class="language-bash"># Basic grouping
+parql agg data/sales.parquet -g "country" -a "sum(revenue):total,count():orders"
+
+# Multiple group columns
+parql agg data/sales.parquet -g "country,device" -a "avg(revenue):avg_rev,count():cnt"
+
+# With ordering and limits
+parql agg data/sales.parquet -g "country" -a "sum(revenue):total" -o "total DESC" -l 10
+
+# With HAVING clause
+parql agg data/sales.parquet -g "user_id" -a "sum(revenue):total" -h "total > 1000"</code></pre>
+                    <div class="options">
+                        <h4>Aggregation Functions:</h4>
+                        <ul>
+                            <li><code>count()</code>: Row count</li>
+                            <li><code>sum(column)</code>: Sum of values</li>
+                            <li><code>avg(column)</code>: Average</li>
+                            <li><code>min(column)</code>: Minimum value</li>
+                            <li><code>max(column)</code>: Maximum value</li>
+                            <li><code>stddev(column)</code>: Standard deviation</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql window</h3>
+                    <p>Apply window functions for advanced analytics.</p>
+                    <pre><code class="language-bash"># Ranking within groups
+parql window data/sales.parquet --partition "country" --order "revenue DESC" --expr "row_number() as rank"
+
+# Running totals
+parql window data/sales.parquet --partition "user_id" --order "timestamp" --expr "sum(revenue) over (rows unbounded preceding) as running_total"
+
+# Moving averages
+parql window data/sales.parquet --partition "user_id" --order "timestamp" --expr "avg(revenue) over (rows between 2 preceding and current row) as moving_avg"</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql pivot</h3>
+                    <p>Transform data from long to wide format.</p>
+                    <pre><code class="language-bash">parql pivot data/sales.parquet -i "country" -c "device" -v "revenue" -f "sum"
+parql pivot data/sales.parquet -i "user_id,country" -c "product" -v "quantity" -f "avg"</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql corr</h3>
+                    <p>Calculate correlation matrices between numeric columns.</p>
+                    <pre><code class="language-bash"># All numeric columns
+parql corr data/sales.parquet
+
+# Specific columns
+parql corr data/sales.parquet -c "quantity,price,revenue,discount"
+
+# Different correlation methods
+parql corr data/sales.parquet --method pearson
+parql corr data/sales.parquet --method spearman</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql percentiles</h3>
+                    <p>Calculate detailed percentile statistics.</p>
+                    <pre><code class="language-bash"># Standard percentiles (25, 50, 75, 90, 95, 99)
+parql percentiles data/sales.parquet -c "revenue,quantity"
+
+# Custom percentiles
+parql percentiles data/sales.parquet --percentiles "10,25,50,75,90,95,99"
+
+# All numeric columns
+parql percentiles data/sales.parquet</code></pre>
+                </div>
+            </section>
+
+            <!-- Data Processing -->
+            <section id="processing">
+                <h2><i class="fas fa-filter"></i> Data Processing</h2>
+                
+                <div class="command-doc">
+                    <h3>parql join</h3>
+                    <p>Join two Parquet files.</p>
+                    <pre><code class="language-bash"># Inner join
+parql join data/users.parquet data/sales.parquet --on "user_id" --how inner
+
+# Left join with column selection
+parql join data/users.parquet data/sales.parquet --on "user_id" --how left -c "users.name,sales.revenue"
+
+# Complex join conditions
+parql join data/users.parquet data/sales.parquet --on "users.user_id = sales.user_id AND users.country = sales.country"</code></pre>
+                    <div class="options">
+                        <h4>Join Types:</h4>
+                        <ul>
+                            <li><code>inner</code>: Only matching rows</li>
+                            <li><code>left</code>: All left rows + matching right</li>
+                            <li><code>right</code>: All right rows + matching left</li>
+                            <li><code>full</code>: All rows from both tables</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql sql</h3>
+                    <p>Execute custom SQL with table parameters.</p>
+                    <pre><code class="language-bash"># Simple query
+parql sql "SELECT country, SUM(revenue) FROM t GROUP BY country ORDER BY 2 DESC" -p t=data/sales.parquet
+
+# Multi-table queries
+parql sql "
+  SELECT u.name, s.total_spent 
+  FROM users u 
+  JOIN (SELECT user_id, SUM(revenue) as total_spent FROM sales GROUP BY user_id) s 
+  ON u.user_id = s.user_id
+  WHERE s.total_spent > 1000
+" -p users=data/users.parquet -p sales=data/sales.parquet
+
+# CTEs and window functions
+parql sql "
+  WITH ranked_sales AS (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY country ORDER BY revenue DESC) as rank
+    FROM t
+  )
+  SELECT * FROM ranked_sales WHERE rank <= 5
+" -p t=data/sales.parquet</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql str</h3>
+                    <p>Perform string operations on text columns.</p>
+                    <pre><code class="language-bash"># Case conversion
+parql str data/users.parquet --column first_name --operation upper
+parql str data/users.parquet --column email --operation lower
+parql str data/users.parquet --column name --operation title
+
+# Trimming
+parql str data/users.parquet --column name --operation strip
+parql str data/users.parquet --column code --operation lstrip
+
+# String length
+parql str data/users.parquet --column email --operation length
+
+# Pattern replacement
+parql str data/users.parquet --column email --operation replace --pattern "@gmail.com" --replacement "@company.com"
+
+# Regex extraction
+parql str data/users.parquet --column email --operation extract --pattern "@([a-z]+\\.com)"</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql pattern</h3>
+                    <p>Advanced pattern searching with SQL LIKE or regex.</p>
+                    <pre><code class="language-bash"># SQL LIKE patterns
+parql pattern data/users.parquet --pattern "%gmail%"
+parql pattern data/users.parquet --pattern "John_" --case-sensitive
+
+# Regex patterns
+parql pattern data/users.parquet --pattern "john.*@gmail" --regex
+parql pattern data/users.parquet --pattern "\\d{3}-\\d{3}-\\d{4}" --regex
+
+# Search specific columns
+parql pattern data/users.parquet --pattern "@company" -c "email,backup_email"
+
+# Count matches only
+parql pattern data/users.parquet --pattern "premium" --count-only</code></pre>
+                </div>
+            </section>
+
+            <!-- Visualization -->
+            <section id="visualization">
+                <h2><i class="fas fa-eye"></i> Visualization & Analysis</h2>
+                
+                <div class="command-doc">
+                    <h3>parql plot</h3>
+                    <p>Create ASCII charts in the terminal.</p>
+                    <pre><code class="language-bash"># Histogram
+parql plot data/sales.parquet -c revenue --chart-type hist --bins 20 --width 60
+
+# Bar chart for categories
+parql plot data/sales.parquet -c country --chart-type bar --width 50 --limit 10
+
+# Scatter plot
+parql plot data/sales.parquet -c revenue --chart-type scatter -x quantity --limit 100
+
+# Line chart for trends
+parql plot data/timeseries.parquet -c metric_a --chart-type line --limit 50</code></pre>
+                    <div class="options">
+                        <h4>Chart Types:</h4>
+                        <ul>
+                            <li><code>hist</code>: Histograms for numeric distributions</li>
+                            <li><code>bar</code>: Bar charts for categorical data</li>
+                            <li><code>scatter</code>: Scatter plots for relationships</li>
+                            <li><code>line</code>: Line charts for trends</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql profile</h3>
+                    <p>Generate comprehensive data quality reports.</p>
+                    <pre><code class="language-bash"># Basic profiling
+parql profile data/sales.parquet
+
+# Detailed profiling with outliers
+parql profile data/sales.parquet --include-all
+
+# Profile specific columns
+parql profile data/users.parquet -c "age,country,plan"</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql outliers</h3>
+                    <p>Detect statistical outliers in numeric data.</p>
+                    <pre><code class="language-bash"># Z-score method (default)
+parql outliers data/sales.parquet -c revenue --method zscore --threshold 3
+
+# IQR method
+parql outliers data/sales.parquet -c revenue --method iqr --threshold 1.5</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql nulls</h3>
+                    <p>Analyze missing values across columns.</p>
+                    <pre><code class="language-bash"># All columns
+parql nulls data/sales.parquet
+
+# Specific column
+parql nulls data/sales.parquet -c "discount"</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql hist</h3>
+                    <p>Generate histograms for numeric columns.</p>
+                    <pre><code class="language-bash">parql hist data/sales.parquet -c revenue --bins 20
+parql hist data/sales.parquet -c quantity --bins 10</code></pre>
+                </div>
+            </section>
+
+            <!-- Data Quality -->
+            <section id="quality">
+                <h2><i class="fas fa-shield-alt"></i> Data Quality</h2>
+                
+                <div class="command-doc">
+                    <h3>parql assert</h3>
+                    <p>Assert data quality rules and constraints.</p>
+                    <pre><code class="language-bash"># Basic assertions
+parql assert data/sales.parquet --rule "row_count > 1000"
+parql assert data/sales.parquet --rule "no_nulls(user_id)" 
+parql assert data/sales.parquet --rule "unique(order_id)"
+
+# Custom SQL conditions
+parql assert data/sales.parquet --rule "min(revenue) >= 0"
+parql assert data/sales.parquet --rule "max(discount) <= 1.0"
+
+# Multiple rules with fail-fast
+parql assert data/sales.parquet --rule "row_count > 5000" --rule "no_nulls(id)" --fail-fast</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql compare-schema</h3>
+                    <p>Compare schemas between two Parquet files.</p>
+                    <pre><code class="language-bash"># Basic comparison
+parql compare-schema data/old.parquet data/new.parquet
+
+# Fail on differences (useful for CI/CD)
+parql compare-schema data/expected.parquet data/actual.parquet --fail-on-change</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql infer-types</h3>
+                    <p>Analyze and suggest optimal data types.</p>
+                    <pre><code class="language-bash"># Basic type inference
+parql infer-types data/sales.parquet
+
+# Get optimization suggestions with SQL
+parql infer-types data/sales.parquet --suggest-types --sample-size 50000</code></pre>
+                </div>
+            </section>
+
+            <!-- System Commands -->
+            <section id="system">
+                <h2><i class="fas fa-cogs"></i> System Commands</h2>
+                
+                <div class="command-doc">
+                    <h3>parql shell</h3>
+                    <p>Start interactive REPL for exploratory analysis.</p>
+                    <pre><code class="language-bash"># Start shell
+parql shell
+
+# Start with profile
+parql shell --profile myprofile</code></pre>
+                    <div class="options">
+                        <h4>Shell Commands:</h4>
+                        <ul>
+                            <li><code>\l data/sales.parquet sales</code>: Load file as 'sales'</li>
+                            <li><code>\tables</code>: Show loaded tables</li>
+                            <li><code>\schema sales</code>: Show table schema</li>
+                            <li><code>\clear</code>: Clear screen</li>
+                            <li><code>exit</code>: Exit shell</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql config</h3>
+                    <p>Manage settings and profiles.</p>
+                    <pre><code class="language-bash"># Set configuration
+parql config set --profile production --threads 8 --memory-limit 4GB --output-format csv
+
+# Show current config
+parql config show --profile production
+
+# Remove setting
+parql config unset --profile production memory-limit</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql cache</h3>
+                    <p>Manage query result caching.</p>
+                    <pre><code class="language-bash"># View cache statistics
+parql cache info
+
+# Clear all cached results
+parql cache clear</code></pre>
+                </div>
+
+                <div class="command-doc">
+                    <h3>parql write</h3>
+                    <p>Export query results to various formats.</p>
+                    <pre><code class="language-bash"># Export to CSV
+parql write data/sales.parquet output.csv --format csv -c "country,revenue" -w "revenue > 1000"
+
+# Export to Parquet with compression
+parql write data/sales.parquet output.parquet --format parquet --compression zstd
+
+# Export to JSON
+parql write data/sales.parquet output.json --format json -w "country = 'US'"
+
+# Dry run to see what would be written
+parql write data/sales.parquet output.csv --format csv --dry-run</code></pre>
+                    <div class="options">
+                        <h4>Formats:</h4>
+                        <ul>
+                            <li><code>parquet</code>: Parquet format</li>
+                            <li><code>csv</code>: Comma-separated values</li>
+                            <li><code>tsv</code>: Tab-separated values</li>
+                            <li><code>json</code>: JSON format</li>
+                            <li><code>ndjson</code>: Newline-delimited JSON</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>ParQL</h4>
+                    <p>A powerful command-line tool for querying and manipulating Parquet datasets directly from the terminal.</p>
+                    <div class="social-links">
+                        <a href="https://github.com/abdulrafey38/parql" class="social-link">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="commands.html">Commands</a></li>
+                        <li><a href="https://github.com/abdulrafey38/parql">GitHub</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 ParQL. MIT License.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

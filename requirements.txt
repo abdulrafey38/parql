@@ -1,0 +1,26 @@
+# Core dependencies
+duckdb>=0.9.0
+click>=8.0.0
+rich>=13.0.0
+tabulate>=0.9.0
+pandas>=1.5.0
+pyarrow>=10.0.0
+
+# Optional dependencies for cloud storage
+boto3>=1.26.0
+google-cloud-storage>=2.5.0
+azure-storage-blob>=12.14.0
+
+# Optional dependencies for HDFS
+hdfs>=2.6.0
+
+# Development dependencies
+pytest>=7.0.0
+pytest-cov>=4.0.0
+black>=22.0.0
+flake8>=5.0.0
+mypy>=0.991
+
+# Documentation
+sphinx>=5.0.0
+sphinx-rtd-theme>=1.2.0
