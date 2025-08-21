@@ -6,7 +6,7 @@ directly from the command line. It supports local files, directories, and
 remote storage (S3, GCS, Azure) with fast, memory-efficient processing.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = "Abdul Rafey"
 __email__ = "abdulrafey38@gmail.com"
 

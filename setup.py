@@ -10,7 +10,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name="parql",
-    version="1.0.0",
+    version="1.0.1",
     author="Abdul Rafey",
     author_email="abdulrafey38@gmail.com",
     description="A command-line tool for querying and manipulating Parquet datasets",
