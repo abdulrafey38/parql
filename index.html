@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParQL - Command Line Parquet Query Tool</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-database"></i>
+                <span>ParQL</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#quickstart" class="nav-link">Quick Start</a>
+                <a href="#commands" class="nav-link">Commands</a>
+                <a href="#examples" class="nav-link">Examples</a>
+                <a href="#remote-data" class="nav-link">Remote Data</a>
+                <a href="#api" class="nav-link">API</a>
+                <a href="https://github.com/abdulrafey38/parql" class="nav-link github-link">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+                <div class="developer-info">
+                    <span>Developed by</span>
+                    <a href="https://github.com/abdulrafey38" class="developer-link">
+                        <img src="https://avatars.githubusercontent.com/u/41017154?v=4" alt="Abdul Rafey" class="developer-avatar">
+                        <span>Abdul Rafey</span>
+                    </a>
+                </div>
+            </div>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        <span class="highlight">ParQL</span>
+                        <br>Command Line Parquet Query Tool
+                    </h1>
+                    <p class="hero-subtitle">
+                        A powerful command-line tool for querying and manipulating Parquet datasets directly from the terminal. 
+                        Bring pandas-like operations and SQL capabilities to your command line, powered by DuckDB.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="#quickstart" class="btn btn-primary">
+                            <i class="fas fa-rocket"></i>
+                            Get Started
+                        </a>
+                        <a href="https://github.com/abdulrafey38/parql" class="btn btn-secondary">
+                            <i class="fab fa-github"></i>
+                            View on GitHub
+                        </a>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <span class="stat-number">25+</span>
+                            <span class="stat-label">Commands</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">100%</span>
+                            <span class="stat-label">CLI Native</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">∞</span>
+                            <span class="stat-label">Possibilities</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-buttons">
+                            <span class="terminal-btn red"></span>
+                            <span class="terminal-btn yellow"></span>
+                            <span class="terminal-btn green"></span>
+                        </div>
+                        <div class="terminal-title">parql shell</div>
+                    </div>
+                    <div class="terminal-content">
+                        <div class="terminal-line">
+                            <span class="prompt">$</span>
+                            <span class="command">parql head data/sales.parquet -n 5</span>
+                        </div>
+                        <div class="terminal-output">
+                            <table class="data-table">
+                                <thead>
+                                    <tr><th>user_id</th><th>country</th><th>revenue</th><th>timestamp</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>1001</td><td>US</td><td>1250.50</td><td>2024-01-01</td></tr>
+                                    <tr><td>1002</td><td>UK</td><td>890.25</td><td>2024-01-01</td></tr>
+                                    <tr><td>1003</td><td>CA</td><td>2100.75</td><td>2024-01-01</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="prompt">$</span>
+                            <span class="command">parql agg data/sales.parquet -g country -a "sum(revenue):total"</span>
+                        </div>
+                        <div class="terminal-output">
+                            <table class="data-table">
+                                <thead>
+                                    <tr><th>country</th><th>total</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>US</td><td>45,250.50</td></tr>
+                                    <tr><td>UK</td><td>32,890.25</td></tr>
+                                    <tr><td>CA</td><td>28,100.75</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features">
+            <div class="container">
+                <h2 class="section-title">Why Choose ParQL?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3>Lightning Fast</h3>
+                        <p>Columnar processing with DuckDB engine. Only reads necessary columns and streams large datasets efficiently.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-terminal"></i>
+                        </div>
+                        <h3>CLI Native</h3>
+                        <p>Built for the command line with beautiful terminal output, interactive shell, and ASCII visualizations.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-cloud"></i>
+                        </div>
+                        <h3>Cloud Ready</h3>
+                        <p>Native support for S3, GCS, Azure, HDFS, and HTTP. Works with data anywhere in the cloud and distributed systems.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h3>Rich Analytics</h3>
+                        <p>25+ commands covering data exploration, aggregation, visualization, and quality checks.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-memory"></i>
+                        </div>
+                        <h3>Memory Efficient</h3>
+                        <p>Smart caching, parallel execution, and memory limits. Handle datasets larger than RAM.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3>SQL Power</h3>
+                        <p>Full SQL support with DuckDB. Complex queries, window functions, and custom expressions.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Start Section -->
+        <section id="quickstart" class="quickstart">
+            <div class="container">
+                <h2 class="section-title">Quick Start</h2>
+                <div class="quickstart-content">
+                    <div class="quickstart-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Install ParQL</h3>
+                            <pre><code class="language-bash"># Install from PyPI
+pip install parql
+
+# Or install from source
+git clone https://github.com/abdulrafey38/parql.git
+cd parql
+pip install -e .</code></pre>
+                        </div>
+                    </div>
+                    <div class="quickstart-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Explore Your Data</h3>
+                            <pre><code class="language-bash"># Preview data
+parql head data/sales.parquet -n 10
+
+# Check schema
+parql schema data/sales.parquet
+
+# Data profiling
+parql profile data/sales.parquet</code></pre>
+                        </div>
+                    </div>
+                                            <div class="quickstart-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Analyze and Visualize</h3>
+                            <pre><code class="language-bash"># Aggregations
+parql agg data/sales.parquet -g country -a "sum(revenue):total"
+
+# Visualizations
+parql plot data/sales.parquet -c revenue --chart-type hist
+
+# Interactive mode
+parql shell
+
+# Remote data sources
+parql head hdfs://localhost/tmp/data.parquet</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Commands Section -->
+        <section id="commands" class="commands">
+            <div class="container">
+                <h2 class="section-title">Command Reference</h2>
+                <div class="commands-grid">
+                    <div class="command-category">
+                        <h3><i class="fas fa-search"></i> Data Exploration</h3>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <code>parql head</code>
+                                <span>Preview first N rows</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql tail</code>
+                                <span>Preview last N rows</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql schema</code>
+                                <span>Show column information</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql count</code>
+                                <span>Count rows</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql sample</code>
+                                <span>Random sampling</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql distinct</code>
+                                <span>Unique values</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="command-category">
+                        <h3><i class="fas fa-chart-line"></i> Analytics</h3>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <code>parql agg</code>
+                                <span>Group and aggregate</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql window</code>
+                                <span>Window functions</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql pivot</code>
+                                <span>Pivot tables</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql corr</code>
+                                <span>Correlation analysis</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql percentiles</code>
+                                <span>Percentile statistics</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="command-category">
+                        <h3><i class="fas fa-filter"></i> Data Processing</h3>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <code>parql select</code>
+                                <span>Filter and select</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql join</code>
+                                <span>Join datasets</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql sql</code>
+                                <span>Custom SQL queries</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql str</code>
+                                <span>String operations</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql pattern</code>
+                                <span>Pattern matching</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="command-category">
+                        <h3><i class="fas fa-eye"></i> Visualization</h3>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <code>parql plot</code>
+                                <span>ASCII charts</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql profile</code>
+                                <span>Data profiling</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql outliers</code>
+                                <span>Outlier detection</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql nulls</code>
+                                <span>Null analysis</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql hist</code>
+                                <span>Histograms</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="command-category">
+                        <h3><i class="fas fa-shield-alt"></i> Data Quality</h3>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <code>parql assert</code>
+                                <span>Data validation</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql compare-schema</code>
+                                <span>Schema comparison</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql infer-types</code>
+                                <span>Type optimization</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="command-category">
+                        <h3><i class="fas fa-cogs"></i> System</h3>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <code>parql shell</code>
+                                <span>Interactive REPL</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql config</code>
+                                <span>Configuration</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql cache</code>
+                                <span>Cache management</span>
+                            </div>
+                            <div class="command-item">
+                                <code>parql write</code>
+                                <span>Export data</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="commands-cta">
+                    <div class="cta-content">
+                        <h3>Need More Details?</h3>
+                        <p>Explore the complete command reference with detailed examples, options, and use cases for all 25+ ParQL commands.</p>
+                        <div class="cta-buttons">
+                            <a href="commands.html" class="btn btn-primary">
+                                <i class="fas fa-book"></i>
+                                View Complete Command Reference
+                            </a>
+                            <a href="https://github.com/abdulrafey38/parql" class="btn btn-secondary">
+                                <i class="fab fa-github"></i>
+                                View Source Code
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Command Reference -->
+                <div class="quick-reference">
+                    <h3>Quick Command Reference</h3>
+                    <div class="command-grid">
+                        <div class="command-quick">
+                            <code>parql head data.parquet -n 10</code>
+                            <span>Preview first 10 rows</span>
+                        </div>
+                        <div class="command-quick">
+                            <code>parql agg data.parquet -g country -a "sum(revenue):total"</code>
+                            <span>Group by country, sum revenue</span>
+                        </div>
+                        <div class="command-quick">
+                            <code>parql profile data.parquet</code>
+                            <span>Data quality report</span>
+                        </div>
+                        <div class="command-quick">
+                            <code>parql plot data.parquet -c revenue --chart-type hist</code>
+                            <span>Create histogram</span>
+                        </div>
+                        <div class="command-quick">
+                            <code>parql sql "SELECT * FROM t WHERE revenue > 1000" -p t=data.parquet</code>
+                            <span>Custom SQL query</span>
+                        </div>
+                        <div class="command-quick">
+                            <code>parql join users.parquet sales.parquet --on "user_id"</code>
+                            <span>Join two datasets</span>
+                        </div>
+                        <div class="command-quick">
+                            <code>parql shell</code>
+                            <span>Interactive mode</span>
+                        </div>
+                        <div class="command-quick">
+                            <code>parql write data.parquet output.csv --format csv</code>
+                            <span>Export to CSV</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Examples Section -->
+        <section id="examples" class="examples">
+            <div class="container">
+                <h2 class="section-title">Examples</h2>
+                <div class="examples-tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" data-tab="exploration">Data Exploration</button>
+                        <button class="tab-btn" data-tab="analysis">Analysis</button>
+                        <button class="tab-btn" data-tab="visualization">Visualization</button>
+                        <button class="tab-btn" data-tab="quality">Data Quality</button>
+                    </div>
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="exploration">
+                            <h3>Data Exploration Examples</h3>
+                            <div class="example-grid">
+                                <div class="example-card">
+                                    <h4>Quick Overview</h4>
+                                    <pre><code class="language-bash"># Preview data
+parql head data/sales.parquet -n 5
+
+# Check schema
+parql schema data/sales.parquet
+
+# Count total rows
+parql count data/sales.parquet
+
+# Sample data for quick analysis
+parql sample data/sales.parquet --rows 1000</code></pre>
+                                </div>
+                                <div class="example-card">
+                                    <h4>Data Profiling</h4>
+                                    <pre><code class="language-bash"># Comprehensive profiling
+parql profile data/sales.parquet --include-all
+
+# Profile specific columns
+parql profile data/users.parquet -c "age,country,plan"
+
+# Check for nulls
+parql nulls data/sales.parquet</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="analysis">
+                            <h3>Data Analysis Examples</h3>
+                            <div class="example-grid">
+                                <div class="example-card">
+                                    <h4>Aggregations</h4>
+                                    <pre><code class="language-bash"># Basic grouping
+parql agg data/sales.parquet -g "country" -a "sum(revenue):total"
+
+# Multiple aggregations
+parql agg data/sales.parquet -g "country,device" \
+  -a "sum(revenue):total,avg(revenue):avg_rev,count():orders"
+
+# With filtering
+parql agg data/sales.parquet -g "user_id" \
+  -a "sum(revenue):total" -h "total > 1000"</code></pre>
+                                </div>
+                                <div class="example-card">
+                                    <h4>Window Functions</h4>
+                                    <pre><code class="language-bash"># Ranking within groups
+parql window data/sales.parquet \
+  --partition "country" \
+  --order "revenue DESC" \
+  --expr "row_number() as rank"
+
+# Running totals
+parql window data/sales.parquet \
+  --partition "user_id" \
+  --order "timestamp" \
+  --expr "sum(revenue) over (rows unbounded preceding) as running_total"</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="visualization">
+                            <h3>Visualization Examples</h3>
+                            <div class="example-grid">
+                                <div class="example-card">
+                                    <h4>ASCII Charts</h4>
+                                    <pre><code class="language-bash"># Histogram
+parql plot data/sales.parquet -c revenue \
+  --chart-type hist --bins 20 --width 60
+
+# Bar chart
+parql plot data/sales.parquet -c country \
+  --chart-type bar --width 50 --limit 10
+
+# Scatter plot
+parql plot data/sales.parquet -c revenue \
+  --chart-type scatter -x quantity --limit 100</code></pre>
+                                </div>
+                                <div class="example-card">
+                                    <h4>Statistical Analysis</h4>
+                                    <pre><code class="language-bash"># Correlation matrix
+parql corr data/sales.parquet -c "quantity,price,revenue"
+
+# Percentiles
+parql percentiles data/sales.parquet -c "revenue"
+
+# Outlier detection
+parql outliers data/sales.parquet -c revenue \
+  --method zscore --threshold 3</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="quality">
+                            <h3>Data Quality Examples</h3>
+                            <div class="example-grid">
+                                <div class="example-card">
+                                    <h4>Validation</h4>
+                                    <pre><code class="language-bash"># Basic assertions
+parql assert data/sales.parquet --rule "row_count > 1000"
+parql assert data/sales.parquet --rule "no_nulls(user_id)"
+parql assert data/sales.parquet --rule "unique(order_id)"
+
+# Custom conditions
+parql assert data/sales.parquet --rule "min(revenue) >= 0"
+parql assert data/sales.parquet --rule "max(discount) <= 1.0"</code></pre>
+                                </div>
+                                <div class="example-card">
+                                    <h4>Schema Management</h4>
+                                    <pre><code class="language-bash"># Compare schemas
+parql compare-schema data/old.parquet data/new.parquet
+
+# Type optimization
+parql infer-types data/sales.parquet --suggest-types
+
+# Schema validation
+parql compare-schema data/expected.parquet \
+  data/actual.parquet --fail-on-change</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Remote Data Sources Section -->
+        <section id="remote-data" class="remote-data">
+            <div class="container">
+                <h2 class="section-title">Remote Data Sources</h2>
+                <div class="remote-data-content">
+                    <p class="section-description">
+                        ParQL supports reading from various remote data sources including cloud storage and distributed file systems.
+                    </p>
+                    
+                    <div class="data-source-grid">
+                        <div class="data-source-card">
+                            <div class="source-icon">
+                                <i class="fab fa-aws"></i>
+                            </div>
+                            <h3>AWS S3</h3>
+                            <pre><code class="language-bash">export AWS_ACCESS_KEY_ID=your_key
+export AWS_SECRET_ACCESS_KEY=your_secret
+parql head s3://bucket/path/data.parquet</code></pre>
+                        </div>
+                        
+                        <div class="data-source-card">
+                            <div class="source-icon">
+                                <i class="fab fa-google"></i>
+                            </div>
+                            <h3>Google Cloud Storage</h3>
+                            <pre><code class="language-bash">export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
+parql agg gs://bucket/data/*.parquet -g country -a "sum(revenue):total"
+
+# Public GCS Datasets
+parql head gs://anonymous@voltrondata-labs-datasets/diamonds/cut=Good/part-0.parquet</code></pre>
+                        </div>
+                        
+                        <div class="data-source-card">
+                            <div class="source-icon">
+                                <i class="fab fa-microsoft"></i>
+                            </div>
+                            <h3>Azure Blob Storage</h3>
+                            <pre><code class="language-bash">export AZURE_STORAGE_ACCOUNT=your_account
+export AZURE_STORAGE_KEY=your_key
+
+# Azure Data Lake Storage (Gen2)
+parql head abfs://container@account.dfs.core.windows.net/path/data.parquet
+
+# Azure Blob Storage (Hadoop-style)
+parql head wasbs://container@account.blob.core.windows.net/path/data.parquet
+
+# Public Azure files via HTTPS
+parql head https://account.blob.core.windows.net/container/path/data.parquet</code></pre>
+                        </div>
+                        
+                        <div class="data-source-card">
+                            <div class="source-icon">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <h3>HDFS (Hadoop)</h3>
+                            <pre><code class="language-bash">export HDFS_NAMENODE=localhost
+export HDFS_PORT=9000
+parql head hdfs://localhost/tmp/save/part-r-00000-6a3ccfae-5eb9-4a88-8ce8-b11b2644d5de.gz.parquet</code></pre>
+                        </div>
+                        
+                        <div class="data-source-card">
+                            <div class="source-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <h3>HTTP/HTTPS</h3>
+                            <pre><code class="language-bash">parql schema https://example.com/data.parquet</code></pre>
+                        </div>
+                        
+                        <div class="data-source-card">
+                            <div class="source-icon">
+                                <i class="fas fa-folder-open"></i>
+                            </div>
+                            <h3>Local & Glob Patterns</h3>
+                            <pre><code class="language-bash">parql head "data/2024/*.parquet" -n 10
+parql agg "data/sales/year=*/month=*/*.parquet" -g year,month</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- API Section -->
+        <section id="api" class="api">
+            <div class="container">
+                <h2 class="section-title">Complete API Reference</h2>
+                <div class="api-content">
+                    <div class="api-section">
+                        <h3>Global Options</h3>
+                        <p>These options work with all ParQL commands:</p>
+                        <div class="option-grid">
+                            <div class="option-item">
+                                <code>--threads INTEGER</code>
+                                <span>Number of processing threads</span>
+                            </div>
+                            <div class="option-item">
+                                <code>--memory-limit TEXT</code>
+                                <span>Memory limit (e.g., 4GB)</span>
+                            </div>
+                            <div class="option-item">
+                                <code>--format [table|csv|tsv|json|ndjson|markdown]</code>
+                                <span>Output format</span>
+                            </div>
+                            <div class="option-item">
+                                <code>--verbose</code>
+                                <span>Verbose output with additional information</span>
+                            </div>
+                            <div class="option-item">
+                                <code>--quiet</code>
+                                <span>Minimal output mode</span>
+                            </div>
+                            <div class="option-item">
+                                <code>--max-width INTEGER</code>
+                                <span>Maximum display width</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="api-section">
+                        <h3>Output Formats</h3>
+                        <p>All commands support multiple output formats:</p>
+                        <pre><code class="language-bash"># Table format (default, rich formatting)
+parql head data/sales.parquet --format table
+
+# CSV output
+parql agg data/sales.parquet -g country -a "sum(revenue):total" --format csv
+
+# JSON output
+parql select data/sales.parquet -c "country,revenue" --format json
+
+# Markdown tables
+parql schema data/sales.parquet --format markdown
+
+# Quiet mode (minimal output)
+parql --quiet count data/sales.parquet</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>ParQL</h4>
+                    <p>A powerful command-line tool for querying and manipulating Parquet datasets directly from the terminal.</p>
+                    <div class="social-links">
+                        <a href="https://github.com/abdulrafey38/parql" class="social-link">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#quickstart">Quick Start</a></li>
+                        <li><a href="#commands">Commands</a></li>
+                        <li><a href="#examples">Examples</a></li>
+                        <li><a href="#api">API Reference</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Built With</h4>
+                    <ul>
+                        <li><a href="https://duckdb.org/">DuckDB</a></li>
+                        <li><a href="https://github.com/willmcgugan/rich">Rich</a></li>
+                        <li><a href="https://click.palletsprojects.com/">Click</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 ParQL. MIT License.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
