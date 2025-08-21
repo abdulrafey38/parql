@@ -7,8 +7,8 @@ remote storage (S3, GCS, Azure) with fast, memory-efficient processing.
 """
 
 __version__ = "1.0.0"
-__author__ = "ParQL Development Team"
-__email__ = "dev@parql.com"
+__author__ = "Abdul Rafey"
+__email__ = "abdulrafey38@gmail.com"
 
 from parql.core.engine import ParQLEngine
 from parql.core.context import ParQLContext
