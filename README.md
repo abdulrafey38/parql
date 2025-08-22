@@ -6,6 +6,7 @@ ParQL brings pandas-like operations and SQL capabilities to the command line, po
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![PyPI Downloads](https://static.pepy.tech/badge/parql)](https://pepy.tech/projects/parql)
 
 ## 🚀 Key Features
 
