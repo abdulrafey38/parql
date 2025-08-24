@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  tests:
+    name: smoke • ${{ matrix.os }} • py${{ matrix.python-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-14, macos-13]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        exclude:
+          []
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Show environment
+        shell: bash
+        run: |
+          python -V
+          pip -V
+          uname -a || ver
+
+      - name: Install package (and pytest)
+        shell: bash
+        run: |
+          pip install --upgrade pip
+          # if you have extras like [dev], switch to: pip install -e ".[dev]"
+          pip install -e .
+          pip install pytest
+
+      # --- Smoke tests ---
+      - name: Import test
+        shell: bash
+        run: |
+          python - <<'PY'
+          import parql
+          print("Imported parql OK:", parql.__version__ if hasattr(parql, "__version__") else "no __version__")
+          PY
+
+      - name: CLI --version
+        shell: bash
+        run: |
+          parql --version || python -m parql --version || true
+
+      - name: CLI --help
+        shell: bash
+        run: |
+          parql --help || python -m parql --help
