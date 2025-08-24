@@ -14,7 +14,14 @@ import time
 from pathlib import Path
 from typing import Optional, Dict, Any
 import tempfile
-import readline  # For shell mode
+import sys
+
+# Conditional import for readline (not available on Windows)
+try:
+    import readline  # For shell mode
+    READLINE_AVAILABLE = True
+except ImportError:
+    READLINE_AVAILABLE = False
 
 import click
 import pandas as pd
