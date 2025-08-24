@@ -7,7 +7,7 @@ name = "parql"
 version = "1.0.1"
 description = "A command-line tool for querying and manipulating Parquet datasets"
 readme = "README.md"
-license = "MIT"
+license = {text = "MIT"}
 authors = [
     {name = "Abdul Rafey", email = "abdulrafey38@gmail.com"}
 ]
