@@ -90,14 +90,29 @@ a:hover {
     padding: 0 2rem;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     height: 70px;
+    position: relative;
 }
 
 .nav-brand {
     display: flex;
     align-items: center;
     font-size: 1.5rem;
+    position: absolute;
+    left: 2rem;
+}
+
+.nav-brand-link {
+    display: flex;
+    align-items: center;
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.nav-brand-link:hover {
+    color: var(--primary-dark);
 }
 
 .developer-info {
@@ -177,6 +192,7 @@ a:hover {
     display: flex;
     align-items: center;
     gap: 1.5rem;
+    justify-content: center;
 }
 
 /* Desktop: Show developer info inline with nav items */
@@ -219,6 +235,10 @@ a:hover {
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
     transition: all 0.2s ease;
+    position: absolute;
+    right: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .github-link:hover {
@@ -1085,6 +1105,22 @@ section {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .nav-container {
+        justify-content: space-between;
+    }
+    
+    .nav-brand {
+        position: static;
+        left: auto;
+    }
+    
+    .github-link {
+        position: static;
+        right: auto;
+        top: auto;
+        transform: none;
+    }
+    
     .nav-menu {
         position: fixed;
         top: 70px;
