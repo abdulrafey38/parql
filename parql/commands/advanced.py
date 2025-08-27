@@ -24,8 +24,9 @@ from parql.utils.exceptions import ParQLError
 @click.option('-c', '--columns', required=True, help='Columns to pivot')
 @click.option('-v', '--values', required=True, help='Values column')
 @click.option('-f', '--func', default='sum', help='Aggregation function')
+@click.option('-n', '--limit', type=int, help='Limit number of rows to return')
 @click.pass_context
-def pivot(ctx, source, index, columns, values, func):
+def pivot(ctx, source, index, columns, values, func, limit):
     """Pivot data from long to wide format."""
     try:
         engine = ctx.obj['engine']
@@ -48,6 +49,10 @@ def pivot(ctx, source, index, columns, values, func):
         GROUP BY {index_str}
         """
         
+        # Add LIMIT if specified
+        if limit:
+            query += f" LIMIT {limit}"
+        
         df = engine.execute_sql(query)
         formatter.print_dataframe(df)
         
@@ -61,8 +66,9 @@ def pivot(ctx, source, index, columns, values, func):
 @click.option('--partition', help='PARTITION BY columns (comma-separated)')
 @click.option('--order', help='ORDER BY clause')
 @click.option('--expr', required=True, help='Window function expression')
+@click.option('-n', '--limit', type=int, help='Limit number of rows to return')
 @click.pass_context
-def window(ctx, source, partition, order, expr):
+def window(ctx, source, partition, order, expr, limit):
     """Apply window functions to data."""
     try:
         engine = ctx.obj['engine']
@@ -70,34 +76,43 @@ def window(ctx, source, partition, order, expr):
         
         table_name = engine.load_source(source)
         
-        # Build the OVER clause
-        over_parts = []
-        
-        if partition:
-            partition_cols = [col.strip() for col in partition.split(',')]
-            over_parts.append(f"PARTITION BY {', '.join(partition_cols)}")
-        
-        if order:
-            over_parts.append(f"ORDER BY {order}")
-        
-        over_clause = f"OVER ({' '.join(over_parts)})"
-        
-        # Build the window function expression
-        if ' as ' in expr.lower():
-            # Expression with alias
-            parts = expr.split(' as ')
-            if len(parts) == 2:
-                func_part = parts[0].strip()
-                alias_part = parts[1].strip()
-                window_expr = f"{func_part} {over_clause} as {alias_part}"
-            else:
-                window_expr = f"{expr} {over_clause}"
+        # Check if the expression already contains an OVER clause
+        if ' over ' in expr.lower():
+            # Expression already has OVER clause, use it as-is
+            window_expr = expr
         else:
-            # Simple expression
-            window_expr = f"{expr} {over_clause}"
+            # Build the OVER clause
+            over_parts = []
+            
+            if partition:
+                partition_cols = [col.strip() for col in partition.split(',')]
+                over_parts.append(f"PARTITION BY {', '.join(partition_cols)}")
+            
+            if order:
+                over_parts.append(f"ORDER BY {order}")
+            
+            over_clause = f"OVER ({' '.join(over_parts)})"
+            
+            # Build the window function expression
+            if ' as ' in expr.lower():
+                # Expression with alias
+                parts = expr.split(' as ')
+                if len(parts) == 2:
+                    func_part = parts[0].strip()
+                    alias_part = parts[1].strip()
+                    window_expr = f"{func_part} {over_clause} as {alias_part}"
+                else:
+                    window_expr = f"{expr} {over_clause}"
+            else:
+                # Simple expression
+                window_expr = f"{expr} {over_clause}"
         
         # Build the complete query
         query = f"SELECT *, {window_expr} FROM {table_name}"
+        
+        # Add LIMIT if specified
+        if limit:
+            query += f" LIMIT {limit}"
         
         df = engine.execute_sql(query)
         formatter.print_dataframe(df)
@@ -112,8 +127,9 @@ def window(ctx, source, partition, order, expr):
 @click.option('--rule', 'rules', multiple=True, required=True,
               help='Validation rules (e.g., "row_count > 1000", "no_nulls(id)")')
 @click.option('--fail-fast', is_flag=True, help='Stop on first validation failure')
+@click.option('-n', '--limit', type=int, help='Limit number of rows to validate')
 @click.pass_context
-def assert_cmd(ctx, source, rules, fail_fast):
+def assert_cmd(ctx, source, rules, fail_fast, limit):
     """Assert data quality rules on Parquet file(s)."""
     try:
         engine = ctx.obj['engine']
@@ -197,8 +213,9 @@ def assert_cmd(ctx, source, rules, fail_fast):
 @click.argument('source1')
 @click.argument('source2')
 @click.option('--fail-on-change', is_flag=True, help='Fail if schemas differ')
+@click.option('-n', '--limit', type=int, help='Limit number of differences to show')
 @click.pass_context
-def compare_schema(ctx, source1, source2, fail_on_change):
+def compare_schema(ctx, source1, source2, fail_on_change, limit):
     """Compare schemas between two Parquet files."""
     try:
         engine = ctx.obj['engine']
@@ -239,8 +256,9 @@ def compare_schema(ctx, source1, source2, fail_on_change):
 @click.option('--method', type=click.Choice(['zscore', 'iqr']), default='zscore',
               help='Outlier detection method')
 @click.option('--threshold', type=float, default=3.0, help='Threshold for outlier detection')
+@click.option('-n', '--limit', type=int, help='Limit number of outliers to return')
 @click.pass_context
-def outliers(ctx, source, column, method, threshold):
+def outliers(ctx, source, column, method, threshold, limit):
     """Detect outliers in numeric columns."""
     try:
         engine = ctx.obj['engine']
@@ -424,8 +442,9 @@ def hist(ctx, source, column, bins):
 @click.option('--method', type=click.Choice(['pearson', 'spearman', 'kendall']), 
               default='pearson', help='Correlation method')
 @click.option('--min-periods', type=int, default=1, help='Minimum number of observations')
+@click.option('-n', '--limit', type=int, help='Limit number of rows to analyze')
 @click.pass_context
-def corr(ctx, source, columns, method, min_periods):
+def corr(ctx, source, columns, method, min_periods, limit):
     """Calculate correlation matrix between numeric columns."""
     try:
         engine = ctx.obj['engine']
@@ -504,8 +523,9 @@ def corr(ctx, source, columns, method, min_periods):
 @click.argument('source')
 @click.option('-c', '--columns', help='Specific columns to profile (comma-separated)')
 @click.option('--include-all', is_flag=True, help='Include all statistics (can be slow)')
+@click.option('-n', '--limit', type=int, help='Limit number of rows to profile')
 @click.pass_context
-def profile(ctx, source, columns, include_all):
+def profile(ctx, source, columns, include_all, limit):
     """Generate comprehensive data quality profile."""
     try:
         engine = ctx.obj['engine']

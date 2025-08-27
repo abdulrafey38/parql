@@ -382,8 +382,9 @@ Examples:
 @click.argument('source')
 @click.option('--suggest-types', is_flag=True, help='Suggest optimal data types')
 @click.option('--sample-size', type=int, default=10000, help='Sample size for type inference')
+@click.option('-n', '--limit', type=int, help='Limit number of rows to analyze')
 @click.pass_context
-def infer_types_temp(ctx, source, suggest_types, sample_size):
+def infer_types_temp(ctx, source, suggest_types, sample_size, limit):
     """Infer optimal data types for columns."""
     try:
         engine = ctx.obj['engine']

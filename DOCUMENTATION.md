@@ -324,7 +324,7 @@ Join two Parquet files.
 parql join data/users.parquet data/sales.parquet --on "user_id" --how inner
 
 # Left join with column selection
-parql join data/users.parquet data/sales.parquet --on "user_id" --how left -c "users.name,sales.revenue"
+parql join data/users.parquet data/sales.parquet --on "user_id" --how left -c "users.first_name,sales.revenue"
 
 # Complex join conditions
 parql join data/users.parquet data/sales.parquet --on "users.user_id = sales.user_id AND users.country = sales.country"
@@ -347,7 +347,7 @@ parql sql "SELECT country, SUM(revenue) FROM t GROUP BY country ORDER BY 2 DESC"
 
 # Multi-table queries
 parql sql "
-  SELECT u.name, s.total_spent 
+  SELECT u.first_name, s.total_spent 
   FROM users u 
   JOIN (SELECT user_id, SUM(revenue) as total_spent FROM sales GROUP BY user_id) s 
   ON u.user_id = s.user_id
@@ -420,10 +420,10 @@ parql pattern data/users.parquet --pattern "john.*@gmail" --regex
 parql pattern data/users.parquet --pattern "\\d{3}-\\d{3}-\\d{4}" --regex
 
 # Search specific columns
-parql pattern data/users.parquet --pattern "@company" -c "email,backup_email"
+parql pattern data/users.parquet --pattern "%@company%" -c "email,plan"
 
 # Count matches only
-parql pattern data/users.parquet --pattern "premium" --count-only
+parql pattern data/users.parquet --pattern "premium" -c "plan" --count-only
 ```
 
 ---
@@ -478,7 +478,7 @@ parql assert data/sales.parquet --rule "min(revenue) >= 0"
 parql assert data/sales.parquet --rule "max(discount) <= 1.0"
 
 # Multiple rules with fail-fast
-parql assert data/sales.parquet --rule "row_count > 5000" --rule "no_nulls(id)" --fail-fast
+parql assert data/sales.parquet --rule "row_count > 5000" --rule "no_nulls(order_id)" --fail-fast
 ```
 
 **Built-in Rules:**

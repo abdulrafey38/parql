@@ -30,8 +30,9 @@ from parql.utils.exceptions import ParQLError
 @click.option('--replacement', help='Replacement string for replace operation')
 @click.option('--separator', default=' ', help='Separator for split operation')
 @click.option('--new-column', help='Name for the new column (default: column_operation)')
+@click.option('-n', '--limit', type=int, help='Limit number of rows to return')
 @click.pass_context
-def str_ops(ctx, source, column, operation, pattern, replacement, separator, new_column):
+def str_ops(ctx, source, column, operation, pattern, replacement, separator, new_column, limit):
     """Perform string manipulation operations on text columns."""
     try:
         engine = ctx.obj['engine']
@@ -95,6 +96,11 @@ def str_ops(ctx, source, column, operation, pattern, replacement, separator, new
         
         # Execute the query
         query = f"SELECT *, {expr} AS {new_column} FROM {table_name}"
+        
+        # Add LIMIT if specified
+        if limit:
+            query += f" LIMIT {limit}"
+        
         df = engine.execute_sql(query)
         
         formatter.print_dataframe(df)
@@ -114,8 +120,9 @@ def str_ops(ctx, source, column, operation, pattern, replacement, separator, new
 @click.option('--height', type=int, default=20, help='Height of the chart in characters')
 @click.option('-x', '--x-column', help='X-axis column for scatter plots')
 @click.option('--limit', type=int, default=100, help='Limit number of data points')
+@click.option('-n', '--rows', type=int, help='Limit number of rows to analyze')
 @click.pass_context
-def plot(ctx, source, column, chart_type, bins, width, height, x_column, limit):
+def plot(ctx, source, column, chart_type, bins, width, height, x_column, limit, rows):
     """Create ASCII charts and plots."""
     try:
         engine = ctx.obj['engine']
@@ -267,8 +274,9 @@ def plot(ctx, source, column, chart_type, bins, width, height, x_column, limit):
 @click.option('--regex', is_flag=True, help='Use regex pattern matching instead of LIKE')
 @click.option('--case-sensitive', is_flag=True, help='Case-sensitive search')
 @click.option('--count-only', is_flag=True, help='Only return match counts')
+@click.option('-n', '--limit', type=int, help='Limit number of rows to return')
 @click.pass_context
-def pattern(ctx, source, pattern, columns, regex, case_sensitive, count_only):
+def pattern(ctx, source, pattern, columns, regex, case_sensitive, count_only, limit):
     """Find patterns in data using LIKE or regex matching."""
     try:
         engine = ctx.obj['engine']
@@ -298,7 +306,8 @@ def pattern(ctx, source, pattern, columns, regex, case_sensitive, count_only):
                 if case_sensitive:
                     condition = f"{col} ~ '{pattern}'"
                 else:
-                    condition = f"{col} ~* '{pattern}'"
+                    # DuckDB doesn't support ~* for case-insensitive regex, use UPPER() instead
+                    condition = f"UPPER({col}) ~ UPPER('{pattern}')"
             else:
                 if case_sensitive:
                     condition = f"{col} LIKE '{pattern}'"
@@ -316,7 +325,8 @@ def pattern(ctx, source, pattern, columns, regex, case_sensitive, count_only):
                     if case_sensitive:
                         condition = f"{col} ~ '{pattern}'"
                     else:
-                        condition = f"{col} ~* '{pattern}'"
+                        # DuckDB doesn't support ~* for case-insensitive regex, use UPPER() instead
+                        condition = f"UPPER({col}) ~ UPPER('{pattern}')"
                 else:
                     if case_sensitive:
                         condition = f"{col} LIKE '{pattern}'"
@@ -339,6 +349,11 @@ def pattern(ctx, source, pattern, columns, regex, case_sensitive, count_only):
         else:
             # Return all matching rows
             query = f"SELECT * FROM {table_name} WHERE {where_clause}"
+            
+            # Add LIMIT if specified
+            if limit:
+                query += f" LIMIT {limit}"
+            
             df = engine.execute_sql(query)
             
             if df.empty:
@@ -357,8 +372,9 @@ def pattern(ctx, source, pattern, columns, regex, case_sensitive, count_only):
 @click.option('-c', '--columns', help='Columns to calculate percentiles for (comma-separated)')
 @click.option('--percentiles', default='25,50,75,90,95,99', 
               help='Comma-separated list of percentiles to calculate')
+@click.option('-n', '--limit', type=int, help='Limit number of rows to analyze')
 @click.pass_context
-def percentiles(ctx, source, columns, percentiles):
+def percentiles(ctx, source, columns, percentiles, limit):
     """Calculate detailed percentile statistics for numeric columns."""
     try:
         engine = ctx.obj['engine']

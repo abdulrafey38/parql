@@ -205,8 +205,9 @@ def select(ctx, source, columns, where, order_by, limit, distinct):
 @cli.command()
 @click.argument('source')
 @click.option('-w', '--where', help='WHERE clause condition')
+@click.option('-n', '--limit', type=int, help='Limit number of rows to count')
 @click.pass_context
-def count(ctx, source, where):
+def count(ctx, source, where, limit):
     """Count rows in Parquet file(s)."""
     try:
         engine = ctx.obj['engine']
@@ -227,8 +228,9 @@ def count(ctx, source, where):
 @cli.command()
 @click.argument('source')
 @click.option('-c', '--columns', help='Comma-separated list of columns for distinct operation')
+@click.option('-n', '--limit', type=int, help='Limit number of rows to return')
 @click.pass_context
-def distinct(ctx, source, columns):
+def distinct(ctx, source, columns, limit):
     """Get distinct rows or values from Parquet file(s)."""
     try:
         engine = ctx.obj['engine']
@@ -307,8 +309,9 @@ def agg(ctx, source, group_by, aggregations, having, order_by, limit):
 @click.argument('query')
 @click.option('-p', '--param', 'params', multiple=True, 
               help='Parameters in format key=value (e.g., -p t=data.parquet)')
+@click.option('-n', '--limit', type=int, help='Limit number of rows to return')
 @click.pass_context
-def sql(ctx, query, params):
+def sql(ctx, query, params, limit):
     """Execute custom SQL query on Parquet file(s)."""
     try:
         engine = ctx.obj['engine']
@@ -340,8 +343,9 @@ def sql(ctx, query, params):
               help='Join type')
 @click.option('-c', '--columns', help='Comma-separated list of columns to select from result')
 @click.option('-l', '--limit', type=int, help='Limit number of rows')
+@click.option('-n', '--rows', type=int, help='Limit number of rows to return')
 @click.pass_context
-def join(ctx, left_source, right_source, join_condition, how, columns, limit):
+def join(ctx, left_source, right_source, join_condition, how, columns, limit, rows):
     """Join two Parquet datasets."""
     try:
         engine = ctx.obj['engine']
@@ -391,8 +395,10 @@ def join(ctx, left_source, right_source, join_condition, how, columns, limit):
         {join_type} JOIN {right_table} right_tbl ON {on_condition}
         """
         
-        if limit:
-            query += f" LIMIT {limit}"
+        # Use rows parameter if provided, otherwise use limit
+        final_limit = rows if rows is not None else limit
+        if final_limit:
+            query += f" LIMIT {final_limit}"
         
         df = engine.execute_sql(query)
         formatter.print_dataframe(df)
@@ -407,8 +413,9 @@ def join(ctx, left_source, right_source, join_condition, how, columns, limit):
 @click.option('--fraction', type=float, help='Fraction of rows to sample (0.0-1.0)')
 @click.option('--rows', type=int, help='Number of rows to sample')
 @click.option('--seed', type=int, help='Random seed for reproducible sampling')
+@click.option('-n', '--limit', type=int, help='Limit number of rows to return')
 @click.pass_context
-def sample(ctx, source, fraction, rows, seed):
+def sample(ctx, source, fraction, rows, seed, limit):
     """Sample rows from Parquet file(s)."""
     try:
         engine = ctx.obj['engine']
@@ -456,8 +463,9 @@ def sample(ctx, source, fraction, rows, seed):
 @click.option('-w', '--where', help='WHERE clause condition')
 @click.option('--compression', help='Compression type (for Parquet: snappy, gzip, lz4, zstd)')
 @click.option('--dry-run', is_flag=True, help='Show what would be written without actually writing')
+@click.option('-n', '--limit', type=int, help='Limit number of rows to write')
 @click.pass_context
-def write(ctx, input_source, output_path, output_format, mode, columns, where, compression, dry_run):
+def write(ctx, input_source, output_path, output_format, mode, columns, where, compression, dry_run, limit):
     """Write query results to file."""
     try:
         engine = ctx.obj['engine']
@@ -472,7 +480,8 @@ def write(ctx, input_source, output_path, output_format, mode, columns, where, c
         df = engine.select(
             source=input_source,
             columns=column_list,
-            where=where
+            where=where,
+            limit=limit
         )
         
         if dry_run:
