@@ -282,32 +282,36 @@ def shell(ctx, profile, non_interactive):
                 if not command:
                     continue
                 
-                if command.lower() in ['exit', 'quit', '\\\\q']:
+                if command.lower() in ['exit', 'quit', '\\\\q', '\\q']:
                     click.echo("Goodbye!")
                     break
                 
-                elif command.lower() in ['help', '\\\\h']:
+                elif command.lower() in ['help', '\\\\h', '\\h']:
                     click.echo("""
 Available commands:
-  help, \\\\h          - Show this help
-  exit, quit, \\\\q    - Exit shell
-  \\\\l <file> [alias] - Load Parquet file with optional alias
-  \\\\tables          - Show loaded tables
-  \\\\schema <table>  - Show table schema
-  \\\\clear           - Clear screen
+  help, \\h           - Show this help
+  exit, quit, \\q     - Exit shell
+  \\l <file> [alias]  - Load Parquet file with optional alias
+  \\tables            - Show loaded tables
+  \\schema <table>    - Show table schema
+  \\clear             - Clear screen
   
 SQL Commands:
   SELECT * FROM table_name;
   SELECT col1, col2 FROM table_name WHERE condition;
   
 Examples:
-  \\\\l data/sales.parquet sales
+  \\l data/sales.parquet sales
   SELECT country, SUM(revenue) FROM sales GROUP BY country;
                     """)
                 
-                elif command.startswith('\\\\l '):
-                    # Load table command
-                    parts = command[3:].strip().split()
+                elif command.startswith('\\\\l ') or command.startswith('\\l '):
+                    # Load table command - support both \\l and \l
+                    if command.startswith('\\\\l '):
+                        parts = command[3:].strip().split()
+                    else:
+                        parts = command[2:].strip().split()
+                    
                     if len(parts) >= 1:
                         file_path = parts[0]
                         alias = parts[1] if len(parts) > 1 else None
@@ -319,9 +323,9 @@ Examples:
                         except Exception as e:
                             click.echo(f"Error loading file: {e}")
                     else:
-                        click.echo("Usage: \\\\l <file_path> [alias]")
+                        click.echo("Usage: \\l <file_path> [alias] or \\\\l <file_path> [alias]")
                 
-                elif command == '\\\\tables':
+                elif command == '\\\\tables' or command == '\\tables':
                     if loaded_tables:
                         click.echo("Loaded tables:")
                         for table, file_path in loaded_tables.items():
@@ -329,8 +333,12 @@ Examples:
                     else:
                         click.echo("No tables loaded")
                 
-                elif command.startswith('\\\\schema '):
-                    table_name = command[8:].strip()
+                elif command.startswith('\\\\schema ') or command.startswith('\\schema '):
+                    if command.startswith('\\\\schema '):
+                        table_name = command[8:].strip()
+                    else:
+                        table_name = command[7:].strip()
+                    
                     if table_name in loaded_tables:
                         try:
                             df = engine.schema(loaded_tables[table_name])
@@ -338,9 +346,9 @@ Examples:
                         except Exception as e:
                             click.echo(f"Error getting schema: {e}")
                     else:
-                        click.echo(f"Table '{table_name}' not found. Use \\\\tables to see loaded tables.")
+                        click.echo(f"Table '{table_name}' not found. Use \\tables to see loaded tables.")
                 
-                elif command == '\\\\clear':
+                elif command == '\\\\clear' or command == '\\clear':
                     os.system('clear' if os.name == 'posix' else 'cls')
                 
                 else:
@@ -363,7 +371,7 @@ Examples:
                     
                     except Exception as e:
                         click.echo(f"Error executing query: {e}")
-                        click.echo("Make sure to load tables first with: \\\\l <file_path> [alias]")
+                        click.echo("Make sure to load tables first with: \\l <file_path> [alias]")
             
             except KeyboardInterrupt:
                 click.echo("\\nUse 'exit' to quit")
