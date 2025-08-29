@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "parql"
-version = "1.0.3"
+version = "1.0.4"
 description = "A command-line tool for querying and manipulating Parquet datasets"
 readme = "README.md"
 license = {text = "MIT"}
